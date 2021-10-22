@@ -10,7 +10,7 @@ def get_cryptos(api_url):
     cryptos = {}
     current_rank = 1
 
-    # Using API URL instead of regular ULR in order to retrieve dynamic content
+    # Using API URL instead of regular URL in order to retrieve dynamic content
     r = requests.get(api_url)
 
     for item in r.json()["data"]["cryptoCurrencyList"]:
@@ -45,7 +45,7 @@ def print_crypto_data(cryptos, symbol):
     if search_crypto(cryptos, symbol):
         print("\nSymbol:", symbol, "USD | Name:", cryptos[symbol].name)
         print("Price:", cryptos[symbol].price, "| Market Cap:", cryptos[symbol].mcap, "USD | Supply:", cryptos[symbol].supply, symbol)
-        print(cryptos[symbol].name, "is currently the #" + str(cryptos[symbol].placement), "cryptocurrency in the world.\n")
+        print(cryptos[symbol].name, "is currently the #" + str(cryptos[symbol].rank), "cryptocurrency in the world.\n")
 
 
 def menu_loop(cryptos):
@@ -94,7 +94,7 @@ def market_watch():
                 winsound.Beep(frequency, duration)
 
         elif action == "i":
-            cryptos = get_cryptos(url)
+            cryptos = get_cryptos(api_url)
             print("Enter the corresponding symbol to see specific info")
             symbol = input(">")
             print_crypto_data(cryptos, symbol)

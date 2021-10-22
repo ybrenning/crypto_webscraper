@@ -6,7 +6,7 @@ class Crypto:
     # All attributes will be saved as strings, with functions that can return them
     # as decimal numbers for possible functional use
     def __init__(self, placement, name, price, mcap="", supply=""):
-        self.placement = placement + 1
+        self.placement = placement
         self.name = name
         self.price = price
         self.mcap = mcap

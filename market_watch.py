@@ -3,46 +3,26 @@ import requests
 import winsound
 from sys import exit
 from datetime import datetime
-from bs4 import BeautifulSoup
 from crypto import Crypto
 
 
-def get_cryptos(url):
-    count = 0
+def get_cryptos(api_url):
     cryptos = {}
-    page_html = requests.get(url)
+    current_rank = 1
 
-    soup = BeautifulSoup(page_html.text, "html.parser")
-    tbody = soup.tbody
-    trs = tbody.contents
+    # Using API URL instead of regular ULR in order to retrieve dynamic content
+    r = requests.get(api_url)
 
-    for tr in trs[:10]:
-        name_html, price_html = tr.contents[2:4]
-        mcap_hmtl = tr.contents[6]
-        supply_html = tr.contents[8]
+    for item in r.json()["data"]["cryptoCurrencyList"]:
+        symbol = item["symbol"]
+        name_str = item["name"]
+        price_str = item["quotes"][2]["price"]
+        mcap_str = item["quotes"][2]["marketCap"]
+        supply_str = item["circulatingSupply"]
 
-        # Getting the strings inside of the respective tags
-        symbol = name_html.find_all("p", class_="q7nmo0-0 krbrab coin-item-symbol")[0].string
-        name_str = name_html.p.string
-        price_str = price_html.a.string
-        mcap_str = mcap_hmtl.p.find_all("span")[1].string
-        supply_str = supply_html.p.string
-
-        new_crypto = Crypto(count, name_str, price_str, mcap_str, supply_str)
+        new_crypto = Crypto(current_rank, name_str, price_str, mcap_str, supply_str)
         cryptos[symbol] = new_crypto
-        count += 1
-
-    for tr in trs[10:]:
-        # The rest of the table has slightly differently structured rows
-        name_html, price_html = tr.contents[2:4]
-
-        symbol = name_html.find_all("span")[2].string
-        name_str = name_html.find_all("span")[1].string
-        price_str = price_html.span.text
-
-        new_crypto = Crypto(count, name_str, price_str)
-        cryptos[symbol] = new_crypto
-        count += 1
+        current_rank += 1
 
     return cryptos
 
@@ -52,7 +32,7 @@ def print_top_10(cryptos):
     print("---------------------------------------------")
     top_10 = list(cryptos.items())[:10]
     for i in range(0, 10):
-        print(str(i + 1) + ".", top_10[i][0], top_10[i][1].price)
+        print(str(i + 1) + ".", top_10[i][0], "|", top_10[i][1].price, "USD")
 
 
 def search_crypto(cryptos, symbol):
@@ -63,8 +43,8 @@ def search_crypto(cryptos, symbol):
 
 def print_crypto_data(cryptos, symbol):
     if search_crypto(cryptos, symbol):
-        print("\nSymbol:", symbol, "| Name:", cryptos[symbol].name)
-        print("Price:", cryptos[symbol].price, "| Market Cap:", cryptos[symbol].mcap, "| Supply:", cryptos[symbol].supply)
+        print("\nSymbol:", symbol, "USD | Name:", cryptos[symbol].name)
+        print("Price:", cryptos[symbol].price, "| Market Cap:", cryptos[symbol].mcap, "USD | Supply:", cryptos[symbol].supply, symbol)
         print(cryptos[symbol].name, "is currently the #" + str(cryptos[symbol].placement), "cryptocurrency in the world.\n")
 
 
@@ -86,9 +66,10 @@ def menu_loop(cryptos):
 
 
 def market_watch():
-    global now, url
+    global now, url, anti_url
     now = datetime.now()
     url = "https://coinmarketcap.com/"
+    api_url = "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/listing?start=1&limit=100&sortBy=market_cap&sortType=desc&convert=USD,BTC,ETH&cryptoType=all&tagType=all&audited=false&aux=ath,atl,high24h,low24h,num_market_pairs,cmc_rank,date_added,max_supply,circulating_supply,total_supply,volume_7d,volume_30d"
 
     while True:
         print("(s)tart the market watch \t (i)nfo about a specific coin \n(a)uto mode \t e(x)it the program")
@@ -99,7 +80,7 @@ def market_watch():
             interval = input(">")
 
             while True:
-                cryptos = get_cryptos(url)
+                cryptos = get_cryptos(api_url)
                 print_top_10(cryptos)
 
                 if action == "s":
@@ -107,6 +88,7 @@ def market_watch():
 
                 print(f"Waiting {interval} minute(s)")
                 time.sleep(float(interval) * 60)
+
                 frequency = 1000
                 duration = 1000
                 winsound.Beep(frequency, duration)

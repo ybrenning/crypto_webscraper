@@ -71,7 +71,7 @@ def print_crypto_data(cryptos, symbol):
     """
     if search_crypto(cryptos, symbol):
         print("\nSymbol:", symbol, "| Name:", cryptos[symbol].name)
-        print("Price:", cryptos[symbol].price, "| Market Cap:", cryptos[symbol].mcap, "USD | Supply:", cryptos[symbol].supply, symbol)
+        print("Price:", cryptos[symbol].price, "USD | Market Cap:", cryptos[symbol].mcap, "USD | Supply:", cryptos[symbol].supply, symbol)
         print(cryptos[symbol].name, "is currently the #" + str(cryptos[symbol].rank), "cryptocurrency in the world.\n")
 
 
